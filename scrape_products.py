@@ -73,7 +73,7 @@ def main():
     urls = re.findall(r"<loc>([^<]+)</loc>", get(SITEMAP))
     print(len(urls), "product urls", flush=True)
     results, failed = [], []
-    with cf.ThreadPoolExecutor(max_workers=4) as ex:
+    with cf.ThreadPoolExecutor(max_workers=2) as ex:
         futs = {ex.submit(scrape, u): u for u in urls}
         for i, f in enumerate(cf.as_completed(futs), 1):
             try:
