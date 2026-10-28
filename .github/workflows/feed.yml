@@ -1,0 +1,46 @@
+# Rebuilds the Carat & Clay Pinterest catalog feed every day from caratandclay.com
+# and publishes it at https://<owner>.github.io/<repo>/pinterest-feed.csv
+name: Daily Pinterest feed
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC daily; Pinterest reads the feed later the same morning
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Read products from caratandclay.com
+        # Stops (and keeps yesterday's feed online) if fewer than 900 products could be read
+        run: python scrape_products.py products.json 900
+      - name: Build feed
+        run: |
+          mkdir -p site
+          python build_feed.py products.json site/pinterest-feed.csv
+          echo "<p>Carat &amp; Clay Pinterest catalog feed: <a href=\"pinterest-feed.csv\">pinterest-feed.csv</a> (rebuilt daily, $(date -u +%F))</p>" > site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
