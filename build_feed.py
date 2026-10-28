@@ -21,6 +21,8 @@ BRAND = "Carat & Clay"
 TRUST_DIAMOND = ("Every lab grown diamond is IGI or GIA certified. Finished by hand in New York. "
                  "Free insured shipping and 30-day returns.")
 TRUST_PLAIN = "Finished by hand in New York. Free insured shipping and 30-day returns."
+# Extra photos per item. Kept low: each one is a wsrv.nl request, and Pinterest got 429 (rate limit) at 9.
+EXTRA_IMAGES = 4
 
 # Metal keys used by ring settings -> (display name, color, material)
 SETTING_METALS = {
@@ -148,7 +150,7 @@ def jewelry_items(p):
             description=desc[:10000],
             link=f"{p['url']}?{UTM}",
             image_link=jpg(imgs[0]),
-            additional_image_link=",".join(jpg(u) for u in imgs[1:10]),
+            additional_image_link=",".join(jpg(u) for u in imgs[1:EXTRA_IMAGES + 1]),
             price=money(price),
             sale_price=money(sale) if 0 < sale < price else "",
             availability="in stock",
@@ -195,7 +197,7 @@ def setting_items(p):
             description=desc,
             link=f"{p['url']}?{UTM}",
             image_link=jpg(imgs[0]),
-            additional_image_link=",".join(jpg(u) for u in imgs[1:10]),
+            additional_image_link=",".join(jpg(u) for u in imgs[1:EXTRA_IMAGES + 1]),
             price=money(price),
             sale_price=money(sale) if 0 < sale < price else "",
             availability="in stock",
